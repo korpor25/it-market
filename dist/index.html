@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="ติดตามและเปรียบเทียบราคาอุปกรณ์ไอทีในประเทศไทย พร้อมข้อมูลจาก Google Shopping">
+  <meta name="theme-color" content="#f5f7fb">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%231b3b69'/%3E%3Cpath d='M15 44V30h8v14zm13 0V21h8v23zm13 0V13h8v31z' fill='white'/%3E%3C/svg%3E">
+  <title>ภาพรวมตลาด | IT Market Intelligence</title>
+  <link rel="stylesheet" href="/styles.css?v=5">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand"><span class="brand-mark" aria-hidden="true">IM</span><span class="brand-name">IT Market <strong>Intelligence</strong><small>THAILAND MARKET DATA</small></span></div>
+      <div class="nav-heading">เมนูหลัก</div>
+      <nav id="main-nav" aria-label="เมนูหลัก">
+        <button class="nav-item active" data-view="dashboard"><span class="nav-symbol" aria-hidden="true">▦</span>ภาพรวมตลาด</button>
+        <button class="nav-item" data-view="explorer"><span class="nav-symbol" aria-hidden="true">⌕</span>สำรวจสินค้า</button>
+        <button class="nav-item" data-view="compare"><span class="nav-symbol" aria-hidden="true">⇄</span>เปรียบเทียบ</button>
+        <button class="nav-item" data-view="trends"><span class="nav-symbol" aria-hidden="true">⌁</span>แนวโน้มราคา</button>
+        <button class="nav-item" data-view="deals"><span class="nav-symbol" aria-hidden="true">％</span>ดีลน่าสนใจ</button>
+        <button class="nav-item" data-view="ai"><span class="nav-symbol" aria-hidden="true">◈</span>ประเมินราคา</button>
+      </nav>
+      <div class="sidebar-bottom">
+        <p class="sidebar-caption">แหล่งข้อมูล</p>
+        <div class="data-note live-source"><span id="source-dot" aria-hidden="true"></span><div><b id="source-label">กำลังเชื่อมต่อ</b><small id="source-time">รอการอัปเดตครั้งแรก</small></div></div>
+        <p class="sidebar-foot">Google Shopping ประเทศไทย ผ่าน SerpApi</p>
+      </div>
+    </aside>
+    <main class="workspace">
+      <header class="topbar">
+        <button class="menu-btn" id="menu-btn" aria-label="เปิดเมนู" aria-controls="sidebar" aria-expanded="false">☰</button>
+        <div class="topbar-title"><p class="eyebrow">MARKET INTELLIGENCE / THAILAND</p><h1 id="page-title">ภาพรวมตลาด</h1><p class="page-subtitle">ข้อมูลราคาอุปกรณ์ไอทีสำหรับการตัดสินใจที่ชัดเจนขึ้น</p></div>
+        <div class="top-actions"><button class="ghost-btn" id="reset-btn">ล้างตัวกรอง</button></div>
+      </header>
+      <section class="live-bar" id="live-bar" aria-live="polite">
+        <div class="live-state"><span class="pulse" id="live-pulse" aria-hidden="true"></span><div><b id="live-title">กำลังโหลดราคาตลาดล่าสุด</b><small id="live-detail">ระบบจะใช้ข้อมูลตัวอย่างหากบริการภายนอกไม่พร้อม</small></div></div>
+        <button class="secondary-btn" id="refresh-live">อัปเดตราคา ↻</button>
+      </section>
+      <section class="filters" aria-label="ตัวกรองข้อมูล">
+        <div class="filter-heading"><div><b>ตัวกรองข้อมูล</b><small>เลือกสินค้าและช่วงราคาที่ต้องการดู</small></div><span class="filter-icon" aria-hidden="true">☷</span></div>
+        <label>หมวดสินค้า<select id="category-filter"><option value="all">ทั้งหมด</option></select></label>
+        <label>แบรนด์<select id="brand-filter"><option value="all">ทุกแบรนด์</option></select></label>
+        <label>ร้านค้า<select id="shop-filter"><option value="all">ทุกร้านค้า</option></select></label>
+        <label class="price-filter"><span class="price-label">ราคาสูงสุด <output id="price-output">฿90,000</output></span><input id="price-filter" type="range" min="3000" max="90000" step="1000" value="90000"></label>
+      </section>
+      <div id="view-root" aria-live="polite"></div>
+      <footer class="site-footer">ราคาและสถานะสินค้าควรตรวจสอบกับร้านค้าก่อนสั่งซื้อ <span>IT Market Intelligence</span></footer>
+    </main>
+  </div>
+  <script src="/app.js?v=5"></script>
+</body>
+</html>
