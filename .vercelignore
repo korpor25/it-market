@@ -6,3 +6,8 @@
 __pycache__
 *.py[cod]
 tests
+.venv
+.tools
+.vscode
+REPORT_TH*
+EquipmentPriceDB.sql
