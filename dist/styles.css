@@ -127,6 +127,11 @@ output { color: #233f65; font: 700 11px Manrope, sans-serif; white-space: nowrap
 .deal-item { display: grid; grid-template-columns: 39px minmax(0, 1fr) auto; align-items: center; gap: 10px; padding: 12px 0; border-bottom: 1px solid #edf1f5; }
 .deal-item:last-child { border-bottom: 0; }
 .product-icon { display: grid; place-items: center; width: 39px; height: 39px; border-radius: 9px; background: #eaf2fa; color: #2a639e; font: 800 10px Manrope, sans-serif; }
+.product-thumb { display: grid; place-items: center; flex: none; width: 39px; height: 39px; overflow: hidden; border: 1px solid var(--line); border-radius: 9px; background: #fff; }
+.product-thumb img { width: 100%; height: 100%; padding: 3px; object-fit: contain; }
+.product-thumb.large, .product-icon.large { width: 100%; height: 150px; border-radius: 11px; }
+.product-icon.large { font-size: 16px; }
+.product-info { display: flex; align-items: center; gap: 10px; min-width: 0; }
 .deal-item b { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; }
 .deal-item small { color: var(--muted); font-size: 11px; }
 .deal-price { text-align: right; font: 800 12px Manrope, sans-serif; }
@@ -247,3 +252,189 @@ tbody tr:last-child td { border-bottom: 0; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
 }
+
+/* หน้าเทียบราคาร้านค้า (หน้าแรก) และหน้าราคาแต่ละร้าน */
+.no-filters .filters, .no-filters #reset-btn { display: none; }
+.catalog-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 14px; }
+.catalog-card { display: flex; flex-direction: column; gap: 8px; padding: 14px; border: 1px solid var(--line); border-radius: 13px; background: var(--surface); color: inherit; text-decoration: none; transition: border-color .18s, box-shadow .18s, transform .18s; }
+.catalog-card:hover, .catalog-card:focus-visible { border-color: #b8d3ee; box-shadow: 0 12px 28px rgba(26, 43, 73, .09); transform: translateY(-2px); }
+.catalog-card .pill { align-self: flex-start; }
+.catalog-card h3 { margin: 0; font-size: 14px; line-height: 1.4; }
+.catalog-price small, .hero-stats small { display: block; color: var(--muted); font-size: 11px; }
+.catalog-price b { color: var(--mint); font: 800 20px Manrope, sans-serif; }
+.catalog-meta { margin-top: auto; color: var(--muted); font-size: 11px; }
+.product-thumb.card, .product-icon.card { width: 100%; height: 150px; border-radius: 11px; }
+.product-thumb.hero, .product-icon.hero { width: 220px; height: 220px; border-radius: 13px; }
+.product-icon.card, .product-icon.hero { font-size: 18px; }
+.skeleton { height: 270px; border-radius: 13px; background: linear-gradient(90deg, var(--surface-2), #f8fafc, var(--surface-2)); background-size: 200% 100%; animation: shimmer 1.2s infinite; }
+.hero-skeleton { height: 260px; }
+@keyframes shimmer { to { background-position: -200% 0; } }
+.back-link { display: inline-block; margin-bottom: 14px; color: #245d9f; font-size: 13px; font-weight: 700; text-decoration: none; }
+.back-link:hover { text-decoration: underline; }
+.product-hero { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 24px; }
+.product-hero h2 { margin: 8px 0 4px; font-size: 24px; line-height: 1.3; }
+.hero-stats { display: flex; flex-wrap: wrap; gap: 26px; margin-top: 16px; }
+.hero-stats b { font: 800 19px Manrope, sans-serif; }
+.hero-stats b.best { color: var(--mint); }
+.offer-list { display: grid; gap: 10px; }
+.offer { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 16px; padding: 13px 15px; border: 1px solid var(--line); border-radius: 12px; }
+.offer.best { border-color: #9fd4cf; background: #f2fbfa; }
+.offer-shop { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.offer-shop > div { min-width: 0; }
+.shop-logo, .shop-initial { flex: none; width: 34px; height: 34px; border: 1px solid var(--line); border-radius: 8px; background: #fff; object-fit: contain; }
+.shop-initial { display: grid; place-items: center; background: #eaf2fa; color: #2a639e; font-weight: 800; }
+.offer-shop b { display: block; font-size: 14px; }
+.offer-shop small { display: block; overflow: hidden; color: var(--muted); font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+.offer-price { text-align: right; }
+.offer-price b { display: block; font: 800 18px Manrope, sans-serif; }
+.offer.best .offer-price b, .best-badge { color: var(--mint); }
+.offer-price small { color: var(--muted); font-size: 11px; }
+.best-badge { font-weight: 700; }
+.buy-btn { display: inline-flex; align-items: center; justify-content: center; padding: 9px 16px; text-decoration: none; white-space: nowrap; }
+@media (max-width: 760px) {
+  .product-hero { grid-template-columns: 1fr; }
+  .product-thumb.hero, .product-icon.hero { width: 100%; height: 200px; }
+  .offer { grid-template-columns: minmax(0, 1fr) auto; }
+  .buy-btn { grid-column: 1 / -1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .skeleton { animation: none; }
+}
+
+/* หน้าทองและค่าเงิน (ข้อมูลจาก EquipmentPriceDB) และกราฟเส้นที่มี tooltip */
+.mock-note { margin-bottom: 16px; border-color: #efddbf; background: #fff9ee; }
+.kpi-grid.five { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.chart-box { position: relative; }
+.chart-box svg { display: block; width: 100%; height: auto; overflow: visible; }
+.chart-box .grid-line { stroke: var(--line); stroke-width: 1; }
+.axis-label { fill: #8a99ab; font-size: 11px; }
+.end-label { fill: var(--text); font-size: 12px; font-weight: 700; }
+.series-line { fill: none; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.hover-line { stroke: #9aa8b8; stroke-width: 1; stroke-dasharray: 3 3; }
+.hover-target { cursor: crosshair; }
+.chart-tip { position: absolute; top: 8px; z-index: 2; min-width: 170px; padding: 9px 11px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); box-shadow: 0 10px 26px rgba(26, 43, 73, .12); font-size: 12px; pointer-events: none; transform: translateX(12px); }
+.chart-tip.flip { transform: translateX(calc(-100% - 12px)); }
+.chart-tip b { display: block; margin-bottom: 4px; }
+.chart-tip span { display: flex; align-items: center; gap: 7px; color: var(--muted); }
+.chart-tip em { margin-left: auto; padding-left: 12px; color: var(--text); font-style: normal; font-weight: 700; }
+.chart-tip i, .chart-legend i { flex: none; width: 10px; height: 10px; border-radius: 3px; }
+.chart-legend { display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 8px; color: var(--muted); font-size: 12px; }
+.chart-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.table-note { margin: 12px 0 0; color: var(--muted); font-size: 11px; }
+button.back-link { padding: 0; border: 0; background: none; cursor: pointer; font-family: inherit; }
+.equipment-hero { grid-template-columns: minmax(0, 1fr); }
+@media (max-width: 1250px) {
+  .kpi-grid.five { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (max-width: 760px) {
+  .kpi-grid.five { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 520px) {
+  .kpi-grid.five { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* หน้าทองและค่าเงิน: คำอธิบาย, แถบแยกผลค่าเงิน/ทอง และเครื่องคิดเลข */
+.explain-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.explain-item { display: flex; flex-direction: column; gap: 6px; padding: 16px; border: 1px solid var(--line); border-radius: 12px; }
+.explain-item.main { border-color: #d7d0ec; background: #f7f5fc; }
+.explain-item b { font-size: 15px; }
+.explain-item p { margin: 0; color: #4d5d72; font-size: 13px; line-height: 1.6; }
+.explain-item em { margin-top: auto; padding-top: 6px; color: var(--text); font-size: 12px; font-style: normal; font-weight: 700; }
+.explain-icon { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 9px; color: #fff; font: 800 13px Manrope, sans-serif; }
+.explain-icon.fx { background: #6955a6; }
+.explain-icon.gold { background: #ad6c16; }
+.explain-icon.tip { background: var(--mint); }
+.explain-line { margin: 14px 0 0; padding: 10px 12px; border-radius: 10px; background: var(--surface-2); font-size: 13px; font-weight: 600; }
+.driver-list { display: grid; gap: 8px; }
+.driver-row { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(120px, 1fr) auto; align-items: center; gap: 16px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 12px; color: inherit; text-decoration: none; transition: border-color .18s, background .18s; }
+.driver-row:hover, .driver-row:focus-visible { border-color: #b8d3ee; background: #f8fbfe; }
+.driver-name b, .driver-name small, .driver-total b, .driver-total small { display: block; }
+.driver-name b { font-size: 13px; }
+.driver-name small, .driver-total small { color: var(--muted); font-size: 11px; }
+.driver-total { text-align: right; }
+.driver-total b { font: 800 17px Manrope, sans-serif; }
+.driver-bar { display: flex; gap: 2px; height: 12px; border-radius: 4px; background: var(--surface-2); overflow: hidden; }
+.driver-bar span { height: 100%; }
+.driver-bar span:last-child { border-radius: 0 4px 4px 0; }
+.seg-fx { background: #6955a6; }
+.seg-gold { background: #ad6c16; }
+.calc-grid { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 22px; align-items: start; }
+.calc-inputs { display: grid; gap: 12px; }
+.calc-inputs small { color: var(--muted); font-weight: 400; }
+.calc-inputs input[type=range] { width: 100%; accent-color: #235da8; }
+.calc-result { display: flex; flex-direction: column; gap: 4px; padding: 20px; border-radius: 13px; background: #f2f7fc; }
+.calc-result > small { color: var(--muted); font-size: 12px; }
+.calc-result > b { font: 800 32px Manrope, sans-serif; }
+.calc-diff { font-size: 14px; font-weight: 700; }
+.calc-split { display: grid; gap: 6px; margin-top: 12px; padding-top: 12px; border-top: 1px solid #dce7f2; }
+.calc-split span { display: flex; align-items: center; gap: 7px; color: var(--muted); font-size: 12px; }
+.calc-split i { width: 10px; height: 10px; border-radius: 3px; }
+.calc-split em { margin-left: auto; color: var(--text); font-style: normal; font-weight: 700; }
+.more-data summary { color: #245d9f; font-size: 14px; font-weight: 700; cursor: pointer; }
+.more-data[open] summary { margin-bottom: 6px; }
+
+/* มือถือ: แถบเมนูล่าง และปรับเลย์เอาต์ให้อ่านง่ายบนจอแคบ */
+.tab-bar { display: none; }
+@media (max-width: 1050px) {
+  .explain-grid, .calc-grid { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 760px) {
+  .sidebar { z-index: 40; }
+  /* แถบเมนูลอยทรงแคปซูล: พื้นขาวโปร่งแสง, ปุ่มที่เลือกเป็นแคปซูลน้ำเงินตัวอักษรขาว (เลื่อนตามด้วย .tab-indicator), แตะ/ชี้เป็นแคปซูลฟ้าอ่อน */
+  .tab-bar { position: fixed; right: 16px; bottom: max(20px, calc(env(safe-area-inset-bottom) + 8px)); left: 16px; transition: transform .2s; z-index: 30; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 2px; padding: 5px; border: 1px solid rgba(214, 226, 238, .9); border-radius: 999px; background: rgba(255, 255, 255, .86); box-shadow: 0 12px 32px rgba(26, 43, 73, .16); -webkit-backdrop-filter: blur(14px) saturate(1.4); backdrop-filter: blur(14px) saturate(1.4); }
+  .tab-indicator { position: absolute; top: 5px; bottom: 5px; left: 0; width: 0; border-radius: 999px; background: #1d538e; box-shadow: 0 4px 12px rgba(29, 83, 142, .32); opacity: 0; transition: transform .32s cubic-bezier(.3, .7, .2, 1), width .32s cubic-bezier(.3, .7, .2, 1), opacity .2s; }
+  .tab-item { position: relative; z-index: 1; min-height: 46px; padding: 0 4px; border: 0; border-radius: 999px; background: transparent; color: #50627a; font: 600 14px/1 "IBM Plex Sans Thai", system-ui, sans-serif; white-space: nowrap; cursor: pointer; transition: background .2s, color .25s; -webkit-tap-highlight-color: transparent; }
+  .tab-item:active { background: #eaf3fc; color: #235da8; }
+  .tab-item.active { color: #fff; background: transparent; }
+  .tab-item:focus-visible { outline: 2px solid #235da8; outline-offset: -3px; }
+  .workspace { padding-bottom: calc(104px + env(safe-area-inset-bottom)); }
+  .toast { right: 16px; bottom: calc(96px + env(safe-area-inset-bottom)); left: 16px; max-width: none; }
+  .driver-row { grid-template-columns: minmax(0, 1fr) auto; gap: 8px 12px; }
+  .driver-bar { grid-column: 1 / -1; grid-row: 2; }
+}
+@media (max-width: 520px) {
+  .top-actions { flex: 0 0 calc(100% - 36px); }
+  .no-filters .top-actions { display: none; }
+  .topbar h1 { font-size: 24px; }
+  .page-subtitle { display: none; }
+  .live-bar { flex-direction: row; align-items: center; gap: 10px; margin: 16px 0 14px; padding: 10px 12px; }
+  .live-bar button { flex: none; align-self: center; padding: 7px 10px; font-size: 12px; }
+  .live-state b { font-size: 12px; }
+  .live-state small { font-size: 11px; }
+  .catalog-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .catalog-card { gap: 6px; padding: 10px; }
+  .product-thumb.card, .product-icon.card { height: 110px; }
+  .catalog-card h3 { font-size: 13px; }
+  .catalog-price b { font-size: 17px; }
+  .catalog-meta { font-size: 10px; }
+  .kpi-grid.five { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .kpi-grid.five > :first-child { grid-column: 1 / -1; }
+  .equipment-table, .monthly-table { min-width: 0; }
+  .equipment-table th:nth-child(2), .equipment-table td:nth-child(2),
+  .equipment-table th:nth-child(3), .equipment-table td:nth-child(3),
+  .equipment-table th:nth-child(4), .equipment-table td:nth-child(4),
+  .equipment-table th:nth-child(7), .equipment-table td:nth-child(7),
+  .monthly-table th:nth-child(3), .monthly-table td:nth-child(3),
+  .monthly-table th:nth-child(4), .monthly-table td:nth-child(4) { display: none; }
+  .hero-stats { gap: 14px 22px; }
+  .product-hero h2 { font-size: 20px; }
+  .calc-result > b { font-size: 28px; }
+}
+
+@media (max-width: 760px) and (hover: hover) {
+  .tab-item:not(.active):hover { background: #eaf3fc; color: #235da8; }
+}
+@media (max-width: 760px) and (prefers-reduced-motion: reduce) {
+  .tab-indicator, .tab-bar { transition: none; }
+}
+
+/* แผนที่แก้ไข CSS (อ้างด้วย selector แทนเลขบรรทัด; ใช้ Ctrl+F ค้นชื่อ)
+   อยากเปลี่ยนสีพื้น/สีหลัก → :root และ --bg/ตัวแปรสี
+   อยากเปลี่ยนแถบเมนูซ้าย → .sidebar
+   อยากเปลี่ยนตัวกรอง → .filters
+   อยากเปลี่ยนกรอบการ์ด → .card
+   อยากเปลี่ยนขนาด/กรอบรูปสินค้า → .product-thumb
+   อยากเปลี่ยนแถบเมนูล่างบนมือถือ → .tab-bar, .tab-item; การ์ดคำอธิบายทอง/ค่าเงิน → .explain-item, .driver-row, .calc-result
+   อยากเปลี่ยนกราฟเส้นหน้าทองและค่าเงิน → .chart-box, .series-line, .chart-tip
+   อยากเปลี่ยนการ์ดสินค้าหน้าแรก → .catalog-card; แถวร้านค้า/ปุ่มไปที่ร้าน → .offer, .buy-btn
+*/

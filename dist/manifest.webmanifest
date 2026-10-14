@@ -1,0 +1,13 @@
+{
+  "name": "IT Market Intelligence",
+  "short_name": "IT Market",
+  "description": "เทียบราคาอุปกรณ์ไอทีจากร้านค้าในประเทศไทย",
+  "lang": "th",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f5f7fb",
+  "theme_color": "#1b3b69",
+  "icons": [
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}
