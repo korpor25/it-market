@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import json
 import math
 import os
 import re
@@ -8,6 +9,7 @@ import statistics
 import time
 from contextlib import closing
 from dataclasses import dataclass
+from functools import lru_cache
 from datetime import UTC, date, datetime
 from decimal import Decimal
 from pathlib import Path
@@ -760,10 +762,20 @@ FROM dbo.vw_PriceSummaryLatest s
 JOIN dbo.vw_PriceCorrelation c ON c.EquipmentCode = s.EquipmentCode
 """
 
-# GET /api/equipment/overview: ราคาทอง/ค่าเงินล่าสุด, กราฟราคาทองทั้งช่วง และตารางอุปกรณ์ทั้งหมด
-# ใช้ def ธรรมดา (ไม่ใช่ async) เพราะ pyodbc เป็นแบบ blocking; FastAPI จะรันใน thread pool ให้เอง
-@app.get("/api/equipment/overview")
-def equipment_overview() -> JSONResponse:
+# ชุดข้อมูลสำรอง: บน Vercel ไม่มี SQL Server จึงใช้ไฟล์ JSON ที่ export จากฐานข้อมูลในเครื่องแทน
+# ข้อมูลในฐานเป็นข้อมูลจำลองที่ไม่เปลี่ยน จึงได้ผลเหมือนอ่านจากฐานจริงทุกประการ
+# สร้างไฟล์ใหม่หลังแก้ EquipmentPriceDB.sql: python scripts/export_equipment_snapshot.py
+EQUIPMENT_SNAPSHOT_PATH = Path(__file__).with_name("equipment_snapshot.json")
+
+@lru_cache(maxsize=1)
+def load_equipment_snapshot() -> dict[str, Any] | None:
+    try:
+        return json.loads(EQUIPMENT_SNAPSHOT_PATH.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return None
+
+# อ่านภาพรวมจาก SQL Server; ข้อผิดพลาดทุกแบบกลายเป็น EquipmentDbError ให้ route ตัดสินใจใช้ชุดสำรอง
+def read_equipment_overview() -> dict[str, Any]:
     try:
         with closing(equipment_connect()) as connection:
             market = db_rows(
@@ -772,43 +784,40 @@ def equipment_overview() -> JSONResponse:
                 " USD, EUR, JPY, CNY FROM dbo.vw_MarketDaily ORDER BY PriceDate",
             )
             equipment = db_rows(connection, EQUIPMENT_SUMMARY_SQL + " ORDER BY s.PctChange DESC")
-    except EquipmentDbError as error:
-        return equipment_error(error.code)
-    except Exception:
-        return equipment_error("DB_UNAVAILABLE")
+    except EquipmentDbError:
+        raise
+    except Exception as error:
+        raise EquipmentDbError("DB_UNAVAILABLE") from error
     if not market:
-        return equipment_error("DB_UNAVAILABLE")
+        raise EquipmentDbError("DB_UNAVAILABLE")
     first, previous, latest = market[0], market[-2] if len(market) > 1 else market[0], market[-1]
     currencies = ("USD", "EUR", "JPY", "CNY")
-    return json_response(
-        {
-            "ok": True,
-            "source": "EquipmentPriceDB",
-            "is_mock_data": True,
-            "start_date": first["date"],
-            "latest_date": latest["date"],
-            "gold": {
-                "buy": latest["gold_buy"],
-                "sell": latest["gold_sell"],
-                "change_day": latest["gold_sell"] - previous["gold_sell"],
-                "change_period": latest["gold_sell"] - first["gold_sell"],
-                "change_period_pct": (latest["gold_sell"] - first["gold_sell"]) * 100 / first["gold_sell"],
-            },
-            "fx": {
-                code: {
-                    "rate": latest[code],
-                    "change_period_pct": (latest[code] - first[code]) * 100 / first[code],
-                }
-                for code in currencies
-            },
-            "gold_series": [{"date": row["date"], "value": row["gold_sell"]} for row in market],
-            "equipment": equipment,
-        }
-    )
+    return {
+        "ok": True,
+        "source": "EquipmentPriceDB",
+        "is_mock_data": True,
+        "start_date": first["date"],
+        "latest_date": latest["date"],
+        "gold": {
+            "buy": latest["gold_buy"],
+            "sell": latest["gold_sell"],
+            "change_day": latest["gold_sell"] - previous["gold_sell"],
+            "change_period": latest["gold_sell"] - first["gold_sell"],
+            "change_period_pct": (latest["gold_sell"] - first["gold_sell"]) * 100 / first["gold_sell"],
+        },
+        "fx": {
+            code: {
+                "rate": latest[code],
+                "change_period_pct": (latest[code] - first[code]) * 100 / first[code],
+            }
+            for code in currencies
+        },
+        "gold_series": [{"date": row["date"], "value": row["gold_sell"]} for row in market],
+        "equipment": equipment,
+    }
 
-# GET /api/equipment/{code}: ข้อมูลอุปกรณ์หนึ่งรายการ + ดัชนีราคา/ทอง/ค่าเงินรายวัน (วันฐาน = 100) + สรุปรายเดือน
-@app.get("/api/equipment/{code}")
-def equipment_detail(code: str) -> JSONResponse:
+# อ่านอุปกรณ์หนึ่งรายการ: ดัชนีราคา/ทอง/ค่าเงินรายวัน (วันฐาน = 100) + สรุปรายเดือน
+def read_equipment_detail(code: str) -> dict[str, Any]:
     try:
         with closing(equipment_connect()) as connection:
             info = db_rows(connection, EQUIPMENT_SUMMARY_SQL + " WHERE s.EquipmentCode = ?", code)
@@ -836,11 +845,40 @@ def equipment_detail(code: str) -> JSONResponse:
                 " WHERE EquipmentCode = ? ORDER BY MonthStart",
                 code,
             )
+    except EquipmentDbError:
+        raise
+    except Exception as error:
+        raise EquipmentDbError("DB_UNAVAILABLE") from error
+    return {"ok": True, "is_mock_data": True, **info[0], "series": series, "monthly": monthly}
+
+# GET /api/equipment/overview: ราคาทอง/ค่าเงินล่าสุด, กราฟราคาทองทั้งช่วง และตารางอุปกรณ์ทั้งหมด
+# อ่านจาก SQL Server ก่อน ถ้าเชื่อมไม่ได้ (เช่นบน Vercel) ใช้ชุดสำรอง และบอกด้วย source="snapshot"
+# ใช้ def ธรรมดา (ไม่ใช่ async) เพราะ pyodbc เป็นแบบ blocking; FastAPI จะรันใน thread pool ให้เอง
+@app.get("/api/equipment/overview")
+def equipment_overview() -> JSONResponse:
+    try:
+        return json_response(read_equipment_overview())
     except EquipmentDbError as error:
-        return equipment_error(error.code)
-    except Exception:
-        return equipment_error("DB_UNAVAILABLE")
-    return json_response({"ok": True, "is_mock_data": True, **info[0], "series": series, "monthly": monthly})
+        snapshot = load_equipment_snapshot()
+        if snapshot is None:
+            return equipment_error(error.code)
+        return json_response({**snapshot["overview"], "source": "snapshot"})
+
+# GET /api/equipment/{code}: รายละเอียดอุปกรณ์หนึ่งรายการ (ลำดับการอ่านเหมือน overview)
+@app.get("/api/equipment/{code}")
+def equipment_detail(code: str) -> JSONResponse:
+    try:
+        return json_response(read_equipment_detail(code))
+    except EquipmentDbError as error:
+        if error.code == "NOT_FOUND":
+            return equipment_error("NOT_FOUND")
+        snapshot = load_equipment_snapshot()
+        if snapshot is None:
+            return equipment_error(error.code)
+        detail = snapshot["details"].get(code)
+        if detail is None:
+            return equipment_error("NOT_FOUND")
+        return json_response({**detail, "source": "snapshot"})
 # ส่วน static frontend: ก่อนเสิร์ฟเว็บต้องมีโฟลเดอร์ dist มิฉะนั้นแอปเริ่มไม่ได้
 # app.frontend ให้ FastAPI เสิร์ฟหน้าเว็บที่ / ขณะที่ /api/* ยังเป็น API routes
 # แก้ข้อความ/เมนูเว็บใน dist/index.html โดยค้น page-title, main-nav และ refresh-live

@@ -372,7 +372,8 @@ async function loadEquipmentOverview(){
   equipmentState.status='loading'; setLiveStatus('loading','กำลังอ่านฐานข้อมูล EquipmentPriceDB','equipment');
   try{
     equipmentState.overview=await fetchEquipment('/api/equipment/overview'); equipmentState.status='ready'; equipmentState.error='';
-    setLiveStatus('ready',`ข้อมูลจำลองถึง ${thaiDate(equipmentState.overview.latest_date)} · ${equipmentState.overview.equipment.length} อุปกรณ์`,'equipment');
+    const fromSnapshot=equipmentState.overview.source==='snapshot';
+    setLiveStatus('ready',`${fromSnapshot?'ชุดข้อมูลจำลองที่บันทึกไว้':'ข้อมูลจำลองจาก SQL Server'} ถึง ${thaiDate(equipmentState.overview.latest_date)} · ${equipmentState.overview.equipment.length} อุปกรณ์`,'equipment');
   }catch(error){
     equipmentState.status='error'; equipmentState.error=error.code;
     setLiveStatus('error',equipmentErrors[error.code]||'อ่านฐานข้อมูลไม่ได้','equipment');
@@ -456,12 +457,12 @@ function paintLiveStatus(){
   const bar=document.querySelector('#live-bar'); const source=document.querySelector('.live-source');
   bar.classList.remove('loading','ready','fallback','error'); source.classList.remove('ready','fallback','error');
   bar.classList.add(mode); source.classList.add(mode);
-  const titles=target==='equipment'?{loading:'กำลังอ่านฐานข้อมูล',ready:'เชื่อมต่อฐานข้อมูล EquipmentPriceDB แล้ว',fallback:'กำลังแสดงข้อมูลที่อ่านไว้ก่อนหน้า',error:'อ่านฐานข้อมูลไม่สำเร็จ'}:target==='catalog'?{loading:'กำลังโหลดราคาจากร้านค้า',ready:'ราคาจากร้านค้าพร้อมแล้ว',fallback:'กำลังแสดงราคาที่โหลดไว้ก่อนหน้า',error:'โหลดราคาจากร้านค้าไม่สำเร็จ'}:{loading:'กำลังโหลดราคาตลาดล่าสุด',ready:'เชื่อมต่อข้อมูลตลาดสดแล้ว',fallback:'กำลังใช้ข้อมูลสำรอง',error:'ไม่สามารถโหลดข้อมูลตลาดได้'};
+  const titles=target==='equipment'?{loading:'กำลังอ่านฐานข้อมูล',ready:'โหลดข้อมูล EquipmentPriceDB แล้ว',fallback:'กำลังแสดงข้อมูลที่อ่านไว้ก่อนหน้า',error:'อ่านฐานข้อมูลไม่สำเร็จ'}:target==='catalog'?{loading:'กำลังโหลดราคาจากร้านค้า',ready:'ราคาจากร้านค้าพร้อมแล้ว',fallback:'กำลังแสดงราคาที่โหลดไว้ก่อนหน้า',error:'โหลดราคาจากร้านค้าไม่สำเร็จ'}:{loading:'กำลังโหลดราคาตลาดล่าสุด',ready:'เชื่อมต่อข้อมูลตลาดสดแล้ว',fallback:'กำลังใช้ข้อมูลสำรอง',error:'ไม่สามารถโหลดข้อมูลตลาดได้'};
   document.querySelector('#live-title').textContent=titles[mode]||titles.loading;
   document.querySelector('#live-detail').textContent=detail||'ระบบจะใช้ข้อมูลสำรองหากบริการภายนอกไม่พร้อม';
   if(target==='equipment'){
     document.querySelector('#source-label').textContent='EquipmentPriceDB (ข้อมูลจำลอง)';
-    document.querySelector('#source-time').textContent=equipmentState.overview?`ข้อมูลถึง ${thaiDate(equipmentState.overview.latest_date)}`:'SQL Server ในเครื่อง';
+    document.querySelector('#source-time').textContent=equipmentState.overview?`${equipmentState.overview.source==='snapshot'?'ชุดที่บันทึกไว้':'SQL Server'} · ถึง ${thaiDate(equipmentState.overview.latest_date)}`:'กำลังโหลด';
     return;
   }
   document.querySelector('#source-label').textContent=mode==='ready'?'Google Shopping ประเทศไทย':mode==='loading'?'กำลังเชื่อมต่อข้อมูลสด':'ข้อมูลสำรอง';

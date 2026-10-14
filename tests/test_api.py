@@ -342,8 +342,24 @@ def test_go_falls_back_to_google_and_rejects_unknown(monkeypatch: pytest.MonkeyP
     assert client.get("/api/go?product=rtx-5070&shop=Other+Shop").status_code == 404
 
 
-def test_equipment_reports_missing_connection(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_equipment_falls_back_to_snapshot_without_database(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.delenv("EQUIPMENT_DB_CONNECTION", raising=False)
+
+    overview = client.get("/api/equipment/overview")
+    detail = client.get("/api/equipment/EQ-004")
+
+    assert overview.status_code == 200
+    assert overview.json()["source"] == "snapshot"
+    assert len(overview.json()["equipment"]) == 12
+    assert detail.status_code == 200
+    assert detail.json()["source"] == "snapshot"
+    assert detail.json()["series"][0]["price_index"] == 100.0
+    assert client.get("/api/equipment/EQ-999").status_code == 404
+
+
+def test_equipment_reports_missing_connection_without_snapshot(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delenv("EQUIPMENT_DB_CONNECTION", raising=False)
+    monkeypatch.setattr(main, "load_equipment_snapshot", lambda: None)
 
     response = client.get("/api/equipment/overview")
 
